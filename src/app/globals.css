@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  /* Paleta Premium Dark */
+  --color-bg: #050506;
+  --color-surface: #111112;
+  --color-surface-soft: #1a1a1b;
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-text-primary: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.4);
+  --color-accent: #ff6b35;
+  --color-accent-rgb: 255, 107, 53;
+  --selection-bg: rgba(255, 107, 53, 0.3);
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  scroll-behavior: smooth !important;
+}
+
+html,
+body {
+  scroll-behavior: smooth !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+
+  /* Standard Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Custom Scrollbar - Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050506;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 2px solid #050506;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
