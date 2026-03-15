@@ -42,7 +42,7 @@ export default function Home() {
             href="/"
             className="text-xl font-black tracking-tighter transition-all hover:text-[var(--color-accent)]"
           >
-            GN
+            GN<span className="text-[var(--color-accent)]">.</span>
           </a>
           <nav className="hidden items-center gap-8 md:flex">
             {["Sobre", "Projetos", "Stacks", "Contato"].map((item) => (
@@ -124,7 +124,7 @@ export default function Home() {
       </main>
 
       {/* Banner de Stacks Dinâmico */}
-      <div className="relative z-0 -mt-20 overflow-hidden select-none pointer-events-none md:pointer-events-auto">
+      <div id="stacks" className="relative z-0 -mt-20 overflow-hidden select-none pointer-events-none md:pointer-events-auto">
         <CurvedLoop
           marqueeText="Python ✦ Matplotlib ✦ NumPy ✦ Pandas ✦ Scikit-learn ✦ BI ✦ Excel ✦ StatsModels ✦"
           speed={1.5}
@@ -135,7 +135,7 @@ export default function Home() {
 
       {/* Sobre mim */}
       <section
-        id="about"
+        id="sobre"
         className="relative z-10 mx-auto max-w-5xl px-6 pb-24 md:px-10 md:pb-32"
       >
         <div className="grid gap-12 rounded-[3rem] border border-white/5 bg-white/[0.02] p-12 backdrop-blur-sm md:grid-cols-[1.2fr_0.8fr]">
@@ -173,7 +173,7 @@ export default function Home() {
 
       {/* Projetos */}
       <section
-        id="projects"
+        id="projetos"
         className="relative z-10 mx-auto max-w-5xl px-6 pb-32 md:px-10"
       >
         <div className="mb-12 flex items-end justify-between">
