@@ -41,7 +41,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
             <div className="relative z-10 mt-10 flex flex-wrap items-center gap-4">
                 <a
-                    href={project.link}
+                    href={project.github_link}
                     target="_blank"
                     rel="noreferrer"
                     className="group/btn flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all hover:bg-black hover:text-white hover:border-black"
@@ -50,9 +50,9 @@ export function ProjectCard({ project }: { project: Project }) {
                     <span className="ml-2 transition-transform duration-300 group-hover/btn:translate-x-1">→</span>
                 </a>
 
-                {project.siteLink && (
+                {project.site_link && (
                     <a
-                        href={project.siteLink}
+                        href={project.site_link}
                         target="_blank"
                         rel="noreferrer"
                         className="group/btn flex items-center justify-center rounded-full bg-[var(--color-accent)] px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-black transition-all hover:scale-105 active:scale-95"

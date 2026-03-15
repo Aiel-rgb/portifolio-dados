@@ -120,7 +120,7 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const id = Number(searchParams.get("id"));
+  const id = searchParams.get("id");
   console.log(`API: DELETE /api/projects starting for ID: ${id}`);
 
   if (!id) {
@@ -138,9 +138,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Check if any row was actually deleted (Supabase delete doesn't return data directly)
-  // A more robust check would be to try fetching before deleting, or rely on error object.
-  // For now, assuming no error means success.
   console.log(`API: DELETE /api/projects success for ID: ${id}`);
   return NextResponse.json({ message: "Projeto excluído com sucesso." });
 }

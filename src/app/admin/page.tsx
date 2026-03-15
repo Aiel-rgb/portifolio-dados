@@ -7,7 +7,7 @@ import type { Project } from "@/app/api/projects/route";
 export default function AdminDashboard() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState<number | null>(null);
+    const [isEditing, setIsEditing] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         link: "",
@@ -61,15 +61,15 @@ export default function AdminDashboard() {
         setIsEditing(project.id);
         setFormData({
             name: project.name,
-            link: project.link,
-            siteLink: project.siteLink || "",
+            link: project.github_link,
+            siteLink: project.site_link || "",
             description: project.description,
             stacks: project.stacks,
         });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: string) => {
         if (!confirm("Tem certeza que deseja excluir?")) return;
         await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
         fetchProjects();
