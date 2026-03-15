@@ -42,7 +42,7 @@ export default function Home() {
             href="/"
             className="text-xl font-black tracking-tighter transition-all hover:text-[var(--color-accent)]"
           >
-            GN<span className="text-[var(--color-accent)]">.</span>
+            GN
           </a>
           <nav className="hidden items-center gap-8 md:flex">
             {["Sobre", "Projetos", "Stacks", "Contato"].map((item) => (
