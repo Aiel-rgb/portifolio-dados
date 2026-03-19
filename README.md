@@ -1,4 +1,4 @@
-# 🚀 Portfólio Premium - Gabriel Neves
+# 🚀 Portfólio Dados - Gabriel Neves
 
 Bem-vindo ao meu portfólio pessoal! Este projeto foi desenvolvido para ser uma vitrine imersiva e profissional das minhas habilidades em **Ciência de Dados**, **Python** e **Inteligência Artificial**.
 
