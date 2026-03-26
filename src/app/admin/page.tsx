@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import type { Project } from "@/app/api/projects/route";
+import { useState } from "react";
+import { PROJECTS, type Project } from "@/data/projects";
 
 export default function AdminDashboard() {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [projects, setProjects] = useState<Project[]>([...PROJECTS]);
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -17,44 +15,43 @@ export default function AdminDashboard() {
     });
     const [message, setMessage] = useState("");
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [copied, setCopied] = useState(false);
 
-    useEffect(() => {
-        fetchProjects();
-    }, []);
-
-    async function fetchProjects() {
-        try {
-            const res = await fetch("/api/projects");
-            const data = await res.json();
-            setProjects(data);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setMessage("");
 
-        const method = isEditing ? "PUT" : "POST";
-        const body = isEditing ? { ...formData, id: isEditing } : formData;
-
-        try {
-            const res = await fetch("/api/projects", {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-
-            if (res.ok) {
-                setMessage(isEditing ? "Projeto atualizado! ✅" : "Projeto adicionado! 🚀");
-                setFormData({ name: "", link: "", siteLink: "", description: "", stacks: "" });
-                setIsEditing(null);
-                fetchProjects();
-            }
-        } catch (err) {
-            setMessage("Erro ao salvar.");
+        if (isEditing) {
+            setProjects((prev) =>
+                prev.map((p) =>
+                    p.id === isEditing
+                        ? {
+                            ...p,
+                            name: formData.name,
+                            github_link: formData.link,
+                            site_link: formData.siteLink || undefined,
+                            description: formData.description,
+                            stacks: formData.stacks,
+                        }
+                        : p,
+                ),
+            );
+            setMessage("Projeto atualizado! ✅");
+        } else {
+            const newProject: Project = {
+                id: crypto.randomUUID(),
+                name: formData.name,
+                github_link: formData.link,
+                site_link: formData.siteLink || undefined,
+                description: formData.description,
+                stacks: formData.stacks,
+            };
+            setProjects((prev) => [...prev, newProject]);
+            setMessage("Projeto adicionado! 🚀");
         }
+
+        setFormData({ name: "", link: "", siteLink: "", description: "", stacks: "" });
+        setIsEditing(null);
     };
 
     const handleEdit = (project: Project) => {
@@ -69,13 +66,12 @@ export default function AdminDashboard() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = (id: string) => {
         if (!confirm("Tem certeza que deseja excluir?")) return;
-        await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
-        fetchProjects();
+        setProjects((prev) => prev.filter((p) => p.id !== id));
     };
 
-    // Drag and Drop Logic
+    // Drag and Drop
     const handleDragStart = (index: number) => setDraggedIndex(index);
 
     const handleDragOver = (e: React.DragEvent, index: number) => {
@@ -90,13 +86,54 @@ export default function AdminDashboard() {
         setDraggedIndex(index);
     };
 
-    const handleDragEnd = async () => {
-        setDraggedIndex(null);
-        await fetch("/api/projects", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reorder: true, projects }),
-        });
+    const handleDragEnd = () => setDraggedIndex(null);
+
+    // Gerar código para copiar
+    const generateCode = () => {
+        const entries = projects
+            .map((p) => {
+                const siteField = p.site_link ? `\n    site_link: "${p.site_link}",` : "";
+                return `  {
+    id: "${p.id}",
+    name: "${p.name}",
+    github_link: "${p.github_link}",${siteField}
+    description: "${p.description.replace(/"/g, '\\"')}",
+    stacks: "${p.stacks}",
+  }`;
+            })
+            .join(",\n");
+
+        return `export type Project = {
+  id: string;
+  name: string;
+  github_link: string;
+  site_link?: string;
+  description: string;
+  stacks: string;
+};
+
+export const PROJECTS: Project[] = [
+${entries}${entries ? "," : ""}
+];
+`;
+    };
+
+    const handleCopyCode = async () => {
+        try {
+            await navigator.clipboard.writeText(generateCode());
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // Fallback
+            const textarea = document.createElement("textarea");
+            textarea.value = generateCode();
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
 
     return (
@@ -140,7 +177,7 @@ export default function AdminDashboard() {
                                 onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                             />
                             <input
-                                placeholder="Site Link (Opcional)"
+                                placeholder="Site / Dashboard Link (Opcional)"
                                 className="w-full rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-sm focus:border-(--color-accent)/50 outline-none transition-all"
                                 value={formData.siteLink}
                                 onChange={(e) => setFormData({ ...formData, siteLink: e.target.value })}
@@ -181,51 +218,79 @@ export default function AdminDashboard() {
                     </form>
                 </section>
 
+                {/* Export Button */}
+                <section className="flex flex-col items-center gap-4">
+                    <button
+                        onClick={handleCopyCode}
+                        className="group relative flex items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 px-10 py-5 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all hover:border-(--color-accent)/50 hover:text-white"
+                    >
+                        {copied ? "Copiado! ✅" : "📋 Copiar Código do projects.ts"}
+                    </button>
+                    <p className="text-[10px] text-white/20 text-center max-w-md">
+                        Após adicionar/editar/reordenar, clique acima para copiar o código gerado e cole em{" "}
+                        <code className="text-(--color-accent)/60">src/data/projects.ts</code>
+                    </p>
+                </section>
+
                 {/* Dashboard Cards */}
                 <section className="space-y-6">
                     <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Seus Projetos (Arraste para reordenar)</h2>
                     <div className="grid gap-4">
-                        {loading ? <p>Carregando...</p> : projects.map((project, index) => (
-                            <div
-                                key={project.id}
-                                draggable
-                                onDragStart={() => handleDragStart(index)}
-                                onDragOver={(e) => handleDragOver(e, index)}
-                                onDragEnd={handleDragEnd}
-                                className={`group flex items-center justify-between gap-6 p-6 rounded-3xl border border-white/5 bg-white/5 backdrop-blur-xl transition-all cursor-move ${draggedIndex === index ? "opacity-30 scale-95" : "hover:border-(--color-accent)/30 hover:bg-white/10"}`}
-                            >
-                                <div className="flex items-center gap-6">
-                                    <div className="flex flex-col items-center gap-1 text-white/20 group-hover:text-(--color-accent)/50 transition-colors">
-                                        <div className="h-1 w-4 rounded-full bg-current" />
-                                        <div className="h-1 w-4 rounded-full bg-current" />
-                                        <div className="h-1 w-4 rounded-full bg-current" />
+                        {projects.length === 0 ? (
+                            <p className="text-white/30 text-center py-10">Nenhum projeto ainda. Adicione acima!</p>
+                        ) : (
+                            projects.map((project, index) => (
+                                <div
+                                    key={project.id}
+                                    draggable
+                                    onDragStart={() => handleDragStart(index)}
+                                    onDragOver={(e) => handleDragOver(e, index)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`group flex items-center justify-between gap-6 p-6 rounded-3xl border border-white/5 bg-white/5 backdrop-blur-xl transition-all cursor-move ${draggedIndex === index ? "opacity-30 scale-95" : "hover:border-(--color-accent)/30 hover:bg-white/10"}`}
+                                >
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex flex-col items-center gap-1 text-white/20 group-hover:text-(--color-accent)/50 transition-colors">
+                                            <div className="h-1 w-4 rounded-full bg-current" />
+                                            <div className="h-1 w-4 rounded-full bg-current" />
+                                            <div className="h-1 w-4 rounded-full bg-current" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-white group-hover:text-(--color-accent) transition-colors">{project.name}</h3>
+                                            <p className="text-xs text-white/40 line-clamp-1">{project.description}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-white group-hover:text-(--color-accent) transition-colors">{project.name}</h3>
-                                        <p className="text-xs text-white/40 line-clamp-1">{project.description}</p>
-                                    </div>
-                                </div>
 
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                    <button
-                                        onClick={() => handleEdit(project)}
-                                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
-                                        title="Editar"
-                                    >
-                                        ✎
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(project.id)}
-                                        className="p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500/60 hover:text-red-500 transition-all"
-                                        title="Excluir"
-                                    >
-                                        🗑
-                                    </button>
+                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                        <button
+                                            onClick={() => handleEdit(project)}
+                                            className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                                            title="Editar"
+                                        >
+                                            ✎
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(project.id)}
+                                            className="p-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500/60 hover:text-red-500 transition-all"
+                                            title="Excluir"
+                                        >
+                                            🗑
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </section>
+
+                {/* Preview do código gerado */}
+                {projects.length > 0 && (
+                    <section className="space-y-4">
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Preview do Código</h2>
+                        <pre className="rounded-3xl border border-white/5 bg-white/[0.02] p-6 text-xs text-white/40 overflow-x-auto max-h-80 overflow-y-auto scrollbar-thin">
+                            <code>{generateCode()}</code>
+                        </pre>
+                    </section>
+                )}
             </div>
         </div>
     );

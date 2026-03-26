@@ -1,33 +1,10 @@
-"use client";
-
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import type { Project } from "./api/projects/route";
 
-
-
+import { PROJECTS } from "@/data/projects";
 import CurvedLoop from "@/components/CurvedLoop";
 import { ProjectCard } from "@/components/ProjectCard";
 
 export default function Home() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadProjects() {
-      try {
-        const res = await fetch("/api/projects", { cache: "no-store" });
-        if (!res.ok) return;
-        const data = (await res.json()) as Project[];
-        setProjects(data);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadProjects();
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#050506] text-white selection:bg-[var(--color-accent)] selection:text-black">
       {/* Background Decorativo */}
@@ -150,7 +127,7 @@ export default function Home() {
               trazer clareza para decisões complexas.
             </p>
             <p className="text-white/40 leading-relaxed italic">
-              "Dados são o novo petróleo, mas o refinamento é o que cria valor."
+              &quot;Dados são o novo petróleo, mas o refinamento é o que cria valor.&quot;
             </p>
           </div>
 
@@ -185,17 +162,13 @@ export default function Home() {
           <p className="text-white/30 text-xs hidden md:block">Projetos selecionados</p>
         </div>
 
-        {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-accent)] border-t-transparent" />
-          </div>
-        ) : projects.length === 0 ? (
+        {PROJECTS.length === 0 ? (
           <p className="text-center py-20 text-white/40 font-bold uppercase tracking-widest animate-pulse">
             Preparando descobertas...
           </p>
         ) : (
           <div className="grid gap-10 md:grid-cols-2">
-            {projects.map((project) => (
+            {PROJECTS.map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>

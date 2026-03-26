@@ -1,6 +1,6 @@
 "use client";
 
-import type { Project } from "@/app/api/projects/route";
+import type { Project } from "@/data/projects";
 
 export function Pill({ label }: { label: string }) {
     return (
