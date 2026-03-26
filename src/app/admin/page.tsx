@@ -16,8 +16,10 @@ export default function AdminDashboard() {
     });
     const [message, setMessage] = useState("");
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [isProd, setIsProd] = useState(false);
 
     useEffect(() => {
+        setIsProd(window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1");
         fetchProjects();
     }, []);
 
@@ -50,7 +52,14 @@ export default function AdminDashboard() {
                     stacks: formData.stacks,
                 }),
             });
-            if (res.ok) setMessage("Projeto atualizado! ✅");
+            if (res.ok) {
+                setMessage("Projeto atualizado! ✅");
+                setFormData({ name: "", link: "", siteLink: "", description: "", stacks: "" });
+                setIsEditing(null);
+            } else {
+                const err = await res.json();
+                setMessage(`Erro: ${err.error || "Falha ao salvar"}`);
+            }
         } else {
             const res = await fetch("/api/projects", {
                 method: "POST",
@@ -63,11 +72,16 @@ export default function AdminDashboard() {
                     stacks: formData.stacks,
                 }),
             });
-            if (res.ok) setMessage("Projeto adicionado! 🚀");
+            if (res.ok) {
+                setMessage("Projeto adicionado! 🚀");
+                setFormData({ name: "", link: "", siteLink: "", description: "", stacks: "" });
+                setIsEditing(null);
+            } else {
+                const err = await res.json();
+                setMessage(`Erro: ${err.error || "Falha ao salvar"}`);
+            }
         }
 
-        setFormData({ name: "", link: "", siteLink: "", description: "", stacks: "" });
-        setIsEditing(null);
         fetchProjects();
     };
 
@@ -130,8 +144,18 @@ export default function AdminDashboard() {
                     </a>
                 </header>
 
+                {isProd && (
+                    <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 backdrop-blur-sm">
+                        <h2 className="text-sm font-bold text-red-400 mb-2">Atenção: Ambiente de Produção</h2>
+                        <p className="text-xs text-white/70">
+                            Você está acessando o Admin no Vercel. O Vercel <b>não permite salvar em arquivos</b> (filesystem read-only). <br />
+                            Para adicionar projetos, você deve rodar o projeto localmente (<code className="bg-black/50 px-1 py-0.5 rounded text-red-300">npm run dev</code>), usar o admin, e depois fazer o `git push`.
+                        </p>
+                    </div>
+                )}
+
                 {/* Form area */}
-                <section className="rounded-[2.5rem] border border-white/5 bg-white/2 p-8 md:p-12 backdrop-blur-xl">
+                <section className={`rounded-[2.5rem] border border-white/5 bg-white/2 p-8 md:p-12 backdrop-blur-xl ${isProd ? "opacity-50 pointer-events-none" : ""}`}>
                     <form onSubmit={handleSubmit} className="grid gap-6">
                         <h2 className="text-lg font-bold text-white/60 mb-2 uppercase tracking-widest text-[10px]">
                             {isEditing ? "Editando Projeto" : "Novo Projeto"}
