@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { PROJECTS, type Project } from "@/data/projects";
+import { useState, useEffect } from "react";
+import type { Project } from "@/data/projects";
 
 export default function AdminDashboard() {
-    const [projects, setProjects] = useState<Project[]>([...PROJECTS]);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -15,43 +16,59 @@ export default function AdminDashboard() {
     });
     const [message, setMessage] = useState("");
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-    const [copied, setCopied] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    async function fetchProjects() {
+        try {
+            const res = await fetch("/api/projects");
+            if (res.ok) {
+                const data = await res.json();
+                setProjects(data);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage("");
 
         if (isEditing) {
-            setProjects((prev) =>
-                prev.map((p) =>
-                    p.id === isEditing
-                        ? {
-                            ...p,
-                            name: formData.name,
-                            github_link: formData.link,
-                            site_link: formData.siteLink || undefined,
-                            description: formData.description,
-                            stacks: formData.stacks,
-                        }
-                        : p,
-                ),
-            );
-            setMessage("Projeto atualizado! ✅");
+            const res = await fetch("/api/projects", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: isEditing,
+                    name: formData.name,
+                    github_link: formData.link,
+                    site_link: formData.siteLink || undefined,
+                    description: formData.description,
+                    stacks: formData.stacks,
+                }),
+            });
+            if (res.ok) setMessage("Projeto atualizado! ✅");
         } else {
-            const newProject: Project = {
-                id: crypto.randomUUID(),
-                name: formData.name,
-                github_link: formData.link,
-                site_link: formData.siteLink || undefined,
-                description: formData.description,
-                stacks: formData.stacks,
-            };
-            setProjects((prev) => [...prev, newProject]);
-            setMessage("Projeto adicionado! 🚀");
+            const res = await fetch("/api/projects", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.name,
+                    github_link: formData.link,
+                    site_link: formData.siteLink || undefined,
+                    description: formData.description,
+                    stacks: formData.stacks,
+                }),
+            });
+            if (res.ok) setMessage("Projeto adicionado! 🚀");
         }
 
         setFormData({ name: "", link: "", siteLink: "", description: "", stacks: "" });
         setIsEditing(null);
+        fetchProjects();
     };
 
     const handleEdit = (project: Project) => {
@@ -66,9 +83,10 @@ export default function AdminDashboard() {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (!confirm("Tem certeza que deseja excluir?")) return;
-        setProjects((prev) => prev.filter((p) => p.id !== id));
+        await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
+        fetchProjects();
     };
 
     // Drag and Drop
@@ -86,54 +104,13 @@ export default function AdminDashboard() {
         setDraggedIndex(index);
     };
 
-    const handleDragEnd = () => setDraggedIndex(null);
-
-    // Gerar código para copiar
-    const generateCode = () => {
-        const entries = projects
-            .map((p) => {
-                const siteField = p.site_link ? `\n    site_link: "${p.site_link}",` : "";
-                return `  {
-    id: "${p.id}",
-    name: "${p.name}",
-    github_link: "${p.github_link}",${siteField}
-    description: "${p.description.replace(/"/g, '\\"')}",
-    stacks: "${p.stacks}",
-  }`;
-            })
-            .join(",\n");
-
-        return `export type Project = {
-  id: string;
-  name: string;
-  github_link: string;
-  site_link?: string;
-  description: string;
-  stacks: string;
-};
-
-export const PROJECTS: Project[] = [
-${entries}${entries ? "," : ""}
-];
-`;
-    };
-
-    const handleCopyCode = async () => {
-        try {
-            await navigator.clipboard.writeText(generateCode());
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch {
-            // Fallback
-            const textarea = document.createElement("textarea");
-            textarea.value = generateCode();
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand("copy");
-            document.body.removeChild(textarea);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
+    const handleDragEnd = async () => {
+        setDraggedIndex(null);
+        await fetch("/api/projects", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reorder: true, projects }),
+        });
     };
 
     return (
@@ -154,7 +131,7 @@ ${entries}${entries ? "," : ""}
                 </header>
 
                 {/* Form area */}
-                <section className="rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-8 md:p-12 backdrop-blur-xl">
+                <section className="rounded-[2.5rem] border border-white/5 bg-white/2 p-8 md:p-12 backdrop-blur-xl">
                     <form onSubmit={handleSubmit} className="grid gap-6">
                         <h2 className="text-lg font-bold text-white/60 mb-2 uppercase tracking-widest text-[10px]">
                             {isEditing ? "Editando Projeto" : "Novo Projeto"}
@@ -218,25 +195,15 @@ ${entries}${entries ? "," : ""}
                     </form>
                 </section>
 
-                {/* Export Button */}
-                <section className="flex flex-col items-center gap-4">
-                    <button
-                        onClick={handleCopyCode}
-                        className="group relative flex items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/5 px-10 py-5 text-[10px] font-bold uppercase tracking-widest text-white/60 transition-all hover:border-(--color-accent)/50 hover:text-white"
-                    >
-                        {copied ? "Copiado! ✅" : "📋 Copiar Código do projects.ts"}
-                    </button>
-                    <p className="text-[10px] text-white/20 text-center max-w-md">
-                        Após adicionar/editar/reordenar, clique acima para copiar o código gerado e cole em{" "}
-                        <code className="text-(--color-accent)/60">src/data/projects.ts</code>
-                    </p>
-                </section>
-
                 {/* Dashboard Cards */}
                 <section className="space-y-6">
                     <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Seus Projetos (Arraste para reordenar)</h2>
                     <div className="grid gap-4">
-                        {projects.length === 0 ? (
+                        {loading ? (
+                            <div className="flex justify-center py-10">
+                                <div className="h-8 w-8 animate-spin rounded-full border-2 border-(--color-accent) border-t-transparent" />
+                            </div>
+                        ) : projects.length === 0 ? (
                             <p className="text-white/30 text-center py-10">Nenhum projeto ainda. Adicione acima!</p>
                         ) : (
                             projects.map((project, index) => (
@@ -281,16 +248,6 @@ ${entries}${entries ? "," : ""}
                         )}
                     </div>
                 </section>
-
-                {/* Preview do código gerado */}
-                {projects.length > 0 && (
-                    <section className="space-y-4">
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Preview do Código</h2>
-                        <pre className="rounded-3xl border border-white/5 bg-white/[0.02] p-6 text-xs text-white/40 overflow-x-auto max-h-80 overflow-y-auto scrollbar-thin">
-                            <code>{generateCode()}</code>
-                        </pre>
-                    </section>
-                )}
             </div>
         </div>
     );
