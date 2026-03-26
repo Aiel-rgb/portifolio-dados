@@ -1,9 +1,16 @@
 [
   {
-    "id": "d3ac6340-ecec-46eb-8a69-0b027df4cafe",
-    "name": "a",
-    "github_link": "a",
-    "description": "a",
-    "stacks": "a"
+    "id": "6d6186a9-7a90-4440-be0a-bb7edaaa0c0b",
+    "name": "FinScope",
+    "github_link": "https://github.com/Aiel-rgb/FinScope",
+    "description": "FinScope é uma análise exploratória comparativa entre os mercados B3 (Brasil) e NYSE/NASDAQ (EUA), cobrindo os setores de Tecnologia e Financeiro. O projeto explora métricas como retorno acumulado, volatilidade, Sharpe Ratio, drawdown e correlação entre ativos, com visualizações em Matplotlib e dashboard interativo em Streamlit.\n\nResources\n",
+    "stacks": "Python, Pandas, Matplotlib, Seaborn, NumPy, Yfinance"
+  },
+  {
+    "id": "324a8d1b-c2ed-4bdb-babf-271c883d65c2",
+    "name": " Análise Exploratória do Catálogo Netflix",
+    "github_link": "https://github.com/Aiel-rgb/Portifolio-Analise-de-Dados-da-NetFlix.CSV",
+    "description": "Projeto de portfólio em Analise de Dados: análise do catálogo da Netflix para entender composição, evolução no tempo e padrões de conteúdo.",
+    "stacks": "Python, pandas, NumPy, Matplotlib"
   }
 ]
