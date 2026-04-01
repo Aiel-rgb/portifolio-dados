@@ -1,0 +1,31 @@
+[
+  {
+    "id": "1",
+    "category": "Front-end ",
+    "items": [
+      "React",
+      "Tailwind CSS",
+      "HTML/CSS",
+      "JS"
+    ]
+  },
+  {
+    "id": "2",
+    "category": "Back-end & Banco de Dados",
+    "items": [
+      "Python",
+      "PostgreSQL",
+      "MySQL"
+    ]
+  },
+  {
+    "id": "3",
+    "category": "Ferramentas & DevOps",
+    "items": [
+      "Git",
+      "GitHub",
+      "Vercel",
+      "Figma"
+    ]
+  }
+]

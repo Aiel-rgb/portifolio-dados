@@ -6,6 +6,8 @@ import type { Project } from "@/data/projects";
 
 import CurvedLoop from "@/components/CurvedLoop";
 import { ProjectCard } from "@/components/ProjectCard";
+import SkillsSection from "@/components/SkillsSection";
+import CertificatesSection from "@/components/CertificatesSection";
 
 export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -35,7 +37,7 @@ export default function Home() {
             GN<span className="text-(--color-accent)">.</span>
           </a>
           <nav className="hidden items-center gap-8 md:flex">
-            {["Sobre", "Projetos", "Stacks", "Contato"].map((item) => (
+            {["Sobre", "Habilidades", "Projetos", "Certificados", "Contato"].map((item) => (
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
@@ -161,6 +163,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Habilidades */}
+      <SkillsSection />
+
       {/* Projetos */}
       <section
         id="projetos"
@@ -191,6 +196,9 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Certificados */}
+      <CertificatesSection />
 
       {/* Footer / Contato */}
       <footer id="contato" className="relative z-10 border-t border-white/5 bg-[#050506] py-20">
