@@ -12,5 +12,12 @@
     "github_link": "https://github.com/Aiel-rgb/Portifolio-Analise-de-Dados-da-NetFlix.CSV",
     "description": "Projeto de portfólio em Analise de Dados: análise do catálogo da Netflix para entender composição, evolução no tempo e padrões de conteúdo.",
     "stacks": "Python, pandas, NumPy, Matplotlib"
+  },
+  {
+    "id": "cf74196f-3c46-4df1-8bc7-15df28c3e307",
+    "name": "Pipeline De Dados para Auditoria",
+    "github_link": "https://github.com/Aiel-rgb/PipelineDeDados.git",
+    "description": "Pipeline de dados para auditoria interna corporativa — automatiza a ingestão, limpeza, detecção de anomalias e geração de relatórios a partir de planilhas Excel e exportações de ERP, com dashboard interativo e análise por IA (Groq).",
+    "stacks": "Python, Streamlit, CSV, Groq, Pandas, Pyplot"
   }
 ]
